@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	file, err := os.Open("brainfuck-test.bf")
+	file, err := os.Open("test.bf")
 	if err != nil {
 		log.Fatal(err)
 
