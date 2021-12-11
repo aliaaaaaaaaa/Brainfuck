@@ -1,8 +1,9 @@
 package parser
 
 import (
-	"Brainfuck/code_generator"
-	"Brainfuck/reader"
+	"Brainfuck/brainfuck/code_generator"
+	"Brainfuck/brainfuck/reader"
+	"io"
 )
 
 type Parser struct {
@@ -10,9 +11,11 @@ type Parser struct {
 }
 
 // New creates a new Parser.
-func New(l *Reader.Reader) *Parser {
+func New(l io.Reader) *Parser {
+	lexer := Reader.New(l)
+
 	return &Parser{
-		reader: l,
+		reader: lexer,
 	}
 }
 
@@ -23,20 +26,20 @@ func (p *Parser) next() Reader.Token {
 	return tok
 }
 
-func (p *Parser) nextInst(tok Reader.Token) branfuck.Instruction {
+func (p *Parser) nextInst(tok Reader.Token) generator.Instruction {
 	switch tok.Type {
 	case Reader.IncTape:
-		return branfuck.InstMoveHead{1}
+		return generator.InstMoveHead{1}
 	case Reader.DecTape:
-		return branfuck.InstMoveHead{-1}
+		return generator.InstMoveHead{-1}
 	case Reader.IncByte:
-		return branfuck.InstAddToByte{1}
+		return generator.InstAddToByte{1}
 	case Reader.DecByte:
-		return branfuck.InstAddToByte{-1}
+		return generator.InstAddToByte{-1}
 	case Reader.WriteByte:
-		return branfuck.InstWriteToOutput{}
+		return generator.InstWriteToOutput{}
 	case Reader.StoreByte:
-		return branfuck.InstReadFromInput{}
+		return generator.InstReadFromInput{}
 	case Reader.LoopEnter:
 		return p.parseLoop()
 	case Reader.LoopExit:
@@ -45,8 +48,8 @@ func (p *Parser) nextInst(tok Reader.Token) branfuck.Instruction {
 	panic("parser: unreachable")
 }
 
-func (p *Parser) parseLoop() branfuck.Instruction {
-	insts := make([]branfuck.Instruction, 0)
+func (p *Parser) parseLoop() generator.Instruction {
+	insts := make([]generator.Instruction, 0)
 	for tok := p.next(); tok.Type != Reader.EOF; tok = p.next() {
 		i := p.nextInst(tok)
 		if i == nil { // exit loop
@@ -54,11 +57,11 @@ func (p *Parser) parseLoop() branfuck.Instruction {
 		}
 		insts = append(insts, i)
 	}
-	return branfuck.InstLoop{insts}
+	return generator.InstLoop{insts}
 }
 
-func (p *Parser) Parse() []branfuck.Instruction {
-	prog := make([]branfuck.Instruction, 0)
+func (p *Parser) Parse() []generator.Instruction {
+	prog := make([]generator.Instruction, 0)
 	for tok := p.next(); tok.Type != Reader.EOF; tok = p.next() {
 		i := p.nextInst(tok)
 

@@ -1,4 +1,4 @@
-package branfuck
+package generator
 
 // Tape represents a tape a Brainfuck program executes on.
 type Tape interface {

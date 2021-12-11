@@ -1,4 +1,4 @@
-package branfuck
+package generator
 
 import (
 	"fmt"
